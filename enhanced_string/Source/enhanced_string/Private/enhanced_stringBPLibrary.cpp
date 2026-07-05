@@ -2270,6 +2270,35 @@ TArray<FString> Uenhanced_stringBPLibrary::enhanced_stringOrderStringArrayByLeng
 	return orderedStringArray;
 }
 
+static bool enhanced_stringIsAlphanumericLess(const FString& A, const FString& B)
+{
+	int i = 0, j = 0;
+
+	while (i < A.Len() && j < B.Len())
+	{
+		if (FChar::IsDigit(A[i]) && FChar::IsDigit(B[j]))
+		{
+			int startI = i;
+			while (i < A.Len() && FChar::IsDigit(A[i])) { i++; }
+			int startJ = j;
+			while (j < B.Len() && FChar::IsDigit(B[j])) { j++; }
+
+			int64 valA = FCString::Atoi64(*A.Mid(startI, i - startI));
+			int64 valB = FCString::Atoi64(*B.Mid(startJ, j - startJ));
+
+			if (valA != valB) { return valA < valB; }
+		}
+		else
+		{
+			if (A[i] != B[j]) { return A[i] < B[j]; }
+			i++;
+			j++;
+		}
+	}
+
+	return (A.Len() - i) < (B.Len() - j);
+}
+
 TArray<FString> Uenhanced_stringBPLibrary::enhanced_stringOrderStringArrayByAlphanumeric(TArray<FString> stringArray,
 	bool ascending)
 {
@@ -2278,7 +2307,7 @@ TArray<FString> Uenhanced_stringBPLibrary::enhanced_stringOrderStringArrayByAlph
 	for (int i = 0; i < stringArray.Num(); i++)
 	{
 		int j = 0;
-		while (j < orderedStringArray.Num() && (ascending ? stringArray[i] > orderedStringArray[j] : stringArray[i] < orderedStringArray[j]))
+		while (j < orderedStringArray.Num() && (ascending ? enhanced_stringIsAlphanumericLess(orderedStringArray[j], stringArray[i]) : enhanced_stringIsAlphanumericLess(stringArray[i], orderedStringArray[j])))
 		{
 			j++;
 		}
